@@ -1,12 +1,137 @@
 import { GetServerSideProps } from 'next';
 import { useState } from 'react';
 import Head from 'next/head';
-import { Hotel } from '@/types/hotel';
+import { SimpleCard, SimpleCardContent, SimpleCardHeader, SimpleCardTitle } from '@/components/CustomCard';
+
+// Types
+interface Hotel {
+  hotelId: string;
+  slug: string;
+  images: string[];
+  title: string;
+  description: string;
+  guestCount: number;
+  bedroomCount: number;
+  bathroomCount: number;
+  amenities: string[];
+  hostInfo: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  rooms: {
+    roomSlug: string;
+    roomImage: string;
+    roomTitle: string;
+    bedroomCount: number;
+  }[];
+}
 
 interface HotelDetailsPageProps {
   hotel: Hotel;
 }
 
+// Components
+const RoomsBeds = ({ hotel }: { hotel: Hotel }) => {
+  return (
+    <SimpleCard className="w-full">
+      <SimpleCardHeader>
+        <SimpleCardTitle>Rooms & beds</SimpleCardTitle>
+      </SimpleCardHeader>
+      <SimpleCardContent>
+        <div className="space-y-6">
+        <div>
+            <h3 className="text-lg font-semibold mb-2">{hotel.bathroomCount} bathroom</h3>
+            <p>Full Bathroom</p>
+          </div>
+        </div>
+      </SimpleCardContent>
+    </SimpleCard>
+  );
+};
+
+ 
+
+const Amenities = ({ amenities }: { amenities: string[] }) => {
+  return (
+    <SimpleCard>
+      <SimpleCardHeader>
+        <SimpleCardTitle>Amenities</SimpleCardTitle>
+      </SimpleCardHeader>
+      <SimpleCardContent>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+          {amenities.map((amenity, index) => (
+            <div key={index} className="flex items-center gap-3">
+              <i className="fas fa-check text-gray-600"></i>
+              <span>{amenity}</span>
+            </div>
+          ))}
+        </div>
+        <button className="mt-6 text-blue-600 hover:underline">
+          See all amenities
+        </button>
+        </SimpleCardContent>
+    </SimpleCard>
+  );
+};
+
+const HouseRules = () => {
+  const rules = [
+    {
+      icon: "clock",
+      title: "Check-in/out",
+      description: ["Check in after 3:00 PM", "Check out before 11:00 AM"]
+    },
+    {
+      icon: "child",
+      title: "Children",
+      description: "Children allowed: ages 0-17"
+    },
+    {
+      icon: "ban",
+      title: "Pets",
+      description: "No pets allowed"
+    },
+    {
+      icon: "calendar-times",
+      title: "Events",
+      description: "No events allowed"
+    },
+    {
+      icon: "smoking-ban",
+      title: "Smoking",
+      description: "Smoking is not permitted"
+    }
+  ];
+
+  return (
+    <SimpleCard>
+      <SimpleCardHeader>
+        <SimpleCardTitle>House Rules</SimpleCardTitle>
+      </SimpleCardHeader>
+      <SimpleCardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {rules.map((rule, index) => (
+            <div key={index} className="flex gap-4">
+              <div className="text-gray-600">
+                <i className={`fas fa-${rule.icon} text-xl`}></i>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-1">{rule.title}</h4>
+                {Array.isArray(rule.description) ? (
+                  rule.description.map((desc, i) => (
+                    <p key={i} className="text-gray-600">{desc}</p>
+                  ))
+                ) : (
+                  <p className="text-gray-600">{rule.description}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        </SimpleCardContent>
+    </SimpleCard>
+  );
+};
 const HotelDetailsPage = ({ hotel }: HotelDetailsPageProps): JSX.Element => {
   const [activeTab, setActiveTab] = useState('Overview');
 
@@ -67,65 +192,82 @@ const HotelDetailsPage = ({ hotel }: HotelDetailsPageProps): JSX.Element => {
         <a 
           href="#" 
           className={`tab ${activeTab === 'Overview' ? 'active' : ''}`}
-          onClick={() => setActiveTab('Overview')}
+          onClick={(e) => { e.preventDefault(); setActiveTab('Overview'); }}
         >
           Overview
         </a>
         <a 
           href="#" 
           className={`tab ${activeTab === 'Amenities' ? 'active' : ''}`}
-          onClick={() => setActiveTab('Amenities')}
+          onClick={(e) => { e.preventDefault(); setActiveTab('Amenities'); }}
         >
           Amenities
         </a>
         <a 
           href="#" 
           className={`tab ${activeTab === 'Policies' ? 'active' : ''}`}
-          onClick={() => setActiveTab('Policies')}
+          onClick={(e) => { e.preventDefault(); setActiveTab('Policies'); }}
         >
           Policies
         </a>
       </div>
 
-      <div className="container">
-        <div className="property-type">Entire home</div>
-        <h1 className="property-title">{hotel.title}</h1>
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            {activeTab === 'Overview' && (
+              <>
+                <div className="property-type mb-4">Entire home</div>
+                <h1 className="text-3xl font-bold mb-6">{hotel.title}</h1>
+                <div className="mb-8">
+                  <RoomsBeds hotel={hotel} />
+                </div>
+                <div className="mb-8">
+                <SimpleCard>
+      <SimpleCardHeader>
+        <SimpleCardTitle>About This Property</SimpleCardTitle>
+      </SimpleCardHeader>
+      <SimpleCardContent>
+                      <p className="text-gray-700">{hotel.description}</p>
+                      <div className="mt-6">
+                        <h3 className="font-semibold mb-2">Host Information</h3>
+                        <p>{hotel.hostInfo}</p>
+                      </div>
+                      <div className="mt-6">
+                        <h3 className="font-semibold mb-2">Location</h3>
+                        <p>{hotel.address}</p>
+                      </div>
+                      </SimpleCardContent>
+                      </SimpleCard>
+                </div>
+              </>
+            )}
 
-        <div className="details">
-          <div className="left">
-            <div className="info">
-              <div className="info-item">
-                <p><i className="fas fa-bed"></i> <strong>{hotel.bedroomCount} bedrooms</strong></p>
-                <p><i className="fas fa-user-friends"></i> Sleeps {hotel.guestCount}</p>
-              </div>
-              <div className="info-item">
-                <p><i className="fas fa-bath"></i> <strong>{hotel.bathroomCount} bathroom</strong></p>
-              </div>
-            </div>
+            {activeTab === 'Amenities' && (
+              <Amenities amenities={hotel.amenities} />
+            )}
 
-            <h3>Popular amenities</h3>
-            <ul className="amenities">
-              {hotel.amenities.map((amenity, index) => (
-                <li key={index}><i className="fas fa-check"></i> {amenity}</li>
-              ))}
-            </ul>
-
-            <h3>Host Information</h3>
-            <p>{hotel.hostInfo}</p>
-
-            <h3>Location</h3>
-            <p>{hotel.address}</p>
+            {activeTab === 'Policies' && (
+              <HouseRules />
+            )}
           </div>
 
-          <div className="right">
-            <div className="booking-card">
-              <div className="price-container">
-                <span className="price-night">Contact Host</span>
-                <span className="per-night">for pricing</span>
-              </div>
-
-              <button className="book-button">Contact Host</button>
-              <div className="property-id"><b>Property #</b> {hotel.hotelId}</div>
+          <div className="lg:col-span-1">
+            <div className="sticky top-4">
+            <SimpleCard>
+            <SimpleCardContent className="p-6">
+                  <div className="text-center mb-4">
+                    <div className="text-2xl font-bold">Contact Host</div>
+                    <div className="text-gray-600">for pricing</div>
+                  </div>
+                  <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                    Contact Host
+                  </button>
+                  <div className="mt-4 text-center text-sm text-gray-600">
+                    <b>Property #</b> {hotel.hotelId}
+                  </div>
+                  </SimpleCardContent>
+</SimpleCard>
             </div>
           </div>
         </div>
@@ -136,15 +278,15 @@ const HotelDetailsPage = ({ hotel }: HotelDetailsPageProps): JSX.Element => {
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   try {
-    const { hotelId } = params as { hotelId: string; slug: string };
+    const { hotelId } = params as { hotelId: string };
     
-    // For testing purposes, return mock data
+    // Mock data
     const mockHotel: Hotel = {
       hotelId: hotelId,
       slug: 'sample-hotel',
       images: ['/lake_view.jpg', '/cottage_exterior.jpg', '/living_room_1.jpg'],
       title: 'Juneau Vacation Home: Stunning View + Beach Access',
-      description: 'Beautiful vacation home with amazing views',
+      description: 'Beautiful vacation home with amazing views of Lena Cove. Perfect for those looking to enjoy a relaxing retreat surrounded by nature.',
       guestCount: 4,
       bedroomCount: 2,
       bathroomCount: 1,
@@ -165,6 +307,12 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
           roomSlug: 'master-bedroom',
           roomImage: '/bedroom1.jpg',
           roomTitle: 'Master Bedroom',
+          bedroomCount: 1
+        },
+        {
+          roomSlug: 'second-bedroom',
+          roomImage: '/bedroom2.jpg',
+          roomTitle: 'Second Bedroom',
           bedroomCount: 1
         }
       ]
